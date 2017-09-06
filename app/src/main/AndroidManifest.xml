@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.bijarchian.task">
+
+   >
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+
+    <application
+        android:name=".App"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity android:name=".Splash">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <receiver
+        android:name=".ParkingEventReceiver"
+        android:exported="false">
+        <intent-filter>
+            <action android:name="com.parkbob.app.PARKING_EVENT_OCCURRED" />
+        </intent-filter>
+    </receiver>
+
+
+
+
+        <meta-data
+            android:name="com.parkbob.api.key"
+            android:value="661f577aa57a6bd62bf91f8351b02ed4" />
+        <meta-data
+            android:name="com.parkbob.api.source"
+            android:value="APPLICANT_TEST_BIJARCHIAN" />
+        <meta-data
+            android:name="com.parkbob.integrator.notification.title"
+            android:value="Notification" />
+        <meta-data
+            android:name="com.parkbob.integrator.notification.text"
+            android:value="This is notification" />
+        <meta-data
+            android:name="com.parkbob.integrator.notification.icon"
+            android:value="" />
+        <meta-data
+            android:name="com.google.android.maps.v2.API_KEY"
+            android:value="AIzaSyBZzxtZAaRMVdsARyl8sGzACkCPT8jxkjc" />
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+    </application>
+
+
+</manifest>
