@@ -22,9 +22,9 @@
         android:layout_height="wrap_content">
 
         <ImageView
-            android:layout_width="30dp"
+            android:layout_width="40dp"
             android:background="@drawable/noparking"
-            android:layout_height="30dp"
+            android:layout_height="40dp"
             />
         <TextView
             android:layout_width="match_parent"
@@ -80,7 +80,13 @@
         android:paddingRight="16dp"
         android:layout_height="wrap_content">
 
-
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="0.2"
+            android:layout_height="wrap_content"
+            android:id="@+id/fromtime"
+            android:textAppearance="@style/TextAppearance.StatusBar.EventContent.Time"
+            />
         <TextView
             android:layout_width="0dp"
             android:layout_weight="0.2"
@@ -91,13 +97,7 @@
 
 
 
-        <TextView
-            android:layout_width="0dp"
-            android:layout_weight="0.2"
-            android:layout_height="wrap_content"
-            android:id="@+id/fromtime"
-            android:textAppearance="@style/TextAppearance.StatusBar.EventContent.Time"
-            />
+
         <TextView
             android:layout_width="0dp"
             android:layout_weight="0.2"
