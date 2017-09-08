@@ -36,14 +36,9 @@ public class MapDirection {
     public MapDirection() {
     }
 
-    public void getDocument(LatLng start, LatLng end, String mode) throws ParserConfigurationException, IOException, SAXException {
 
 
-
-
-    }
-
-    public Document getresponse(String res){
+    public Document getresponse(InputStream res){
 
         DocumentBuilder builder = null;
         try {

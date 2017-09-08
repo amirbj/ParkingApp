@@ -20,7 +20,7 @@ import android.widget.TextView;
 public class LaterTabFragment extends Fragment {
 
 
-    TextView pricetxt, chargetxt, fromtimetxt, totimetxt, titletxt, noparkingtxt;
+    TextView pricetxt, maxstaytxt, fromtimetxt, totimetxt, titletxt, noparkingtxt;
     Bundle bundle;
     LinearLayout mlayout, noparking_layout;
 
@@ -35,6 +35,7 @@ public class LaterTabFragment extends Fragment {
 
     }
 
+    //Initilizing content of Later Tab
     private void init(View v, Bundle data) {
 
         noparking_layout = (LinearLayout) v.findViewById(R.id.forbiden_linear_layout);
@@ -42,7 +43,7 @@ public class LaterTabFragment extends Fragment {
         noparkingtxt = (TextView) v.findViewById(R.id.forbidentxt);
         titletxt = (TextView) v.findViewById(R.id.title);
         pricetxt = (TextView) v.findViewById(R.id.price);
-        chargetxt = (TextView) v.findViewById(R.id.charge);
+        maxstaytxt = (TextView) v.findViewById(R.id.maxstay);
         fromtimetxt = (TextView) v.findViewById(R.id.fromtime);
         totimetxt = (TextView) v.findViewById(R.id.totime);
         ////////////////////////////////////////////
@@ -59,6 +60,7 @@ public class LaterTabFragment extends Fragment {
                 mlayout.setVisibility(View.VISIBLE);
                 pricetxt.setText(data.getDouble("fprice")+ " EUR");
                 titletxt.setText(data.getString("ftitle"));
+                maxstaytxt.setText("Max "+data.getInt("fmaxstay"));
                 fromtimetxt.setText(data.getString("ffromtime"));
                 totimetxt.setText(data.getString("ftotime"));
 

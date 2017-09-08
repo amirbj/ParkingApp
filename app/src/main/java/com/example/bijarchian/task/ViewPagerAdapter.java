@@ -45,7 +45,7 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
     @Override
     public Fragment getItem(int position) {
 
-       // fm.beginTransaction().replace(R.id.pager, TabHostFragment.newInstance(position,rulesContext)).commitNow();
+
         return TabHostFragment.newInstance(position);
     }
 

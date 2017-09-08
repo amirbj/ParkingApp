@@ -1,63 +1,55 @@
 package com.example.bijarchian.task;
 
 import android.Manifest;
-import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTabHost;
-import android.support.v4.content.WakefulBroadcastReceiver;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.parkbob.ParkbobConfiguration;
 import com.parkbob.ParkbobManager;
 import com.parkbob.backend.entity.ParkingEventType;
 import com.parkbob.models.RulesContext;
-import com.parkbob.service.util.DeviceSupported;
+
 
 import org.w3c.dom.Document;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
-import okhttp3.Call;
-import okhttp3.Callback;
+
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -70,6 +62,8 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     public static RulesContext rulesContext;
     TextView address;
     ImageView navigationImg;
+    ProgressBar navBar;
+    Snackbar snak;
 
     boolean isGPSEnabled = false;
     boolean isNetworkEnabled = false;
@@ -80,13 +74,15 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     // The minimum distance to change Updates in meters
-    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 0;
+    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 1; // every one meter
 
     // The minimum time between updates in milliseconds
-    private static final long MIN_TIME_BW_UPDATES = 1000  * 1;
+    private static final long MIN_TIME_BW_UPDATES = 1000  * 1; // every one second
 
     // Declaring a Location Manager
     protected LocationManager locationManager;
+    Location loc = new Location("location");
+
 
 
     @Override
@@ -100,49 +96,29 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
+
+    //navigation from current location to selected location
     private void navigate(final LocationListener listener) {
         navigationImg = (ImageView) findViewById(R.id.navigation_img);
+        navBar = (ProgressBar) findViewById(R.id.progressBar2);
+        navBar.setVisibility(View.INVISIBLE);
+
         navigationImg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Location loc = getLocation(listener);
-                String url = "http://maps.googleapis.com/maps/api/directions/xml?"
-                        + "origin=" + loc.getLatitude() + "," + loc.getLongitude()
-                        + "&destination=" + location.getLatitude() + "," + location.getLongitude()
-                        + "&sensor=false&units=metric&mode=driving";
-
-                Log.d("url", url);
-                try {
-                    OkHttpClient httpClient = new OkHttpClient();
-                    Document doc;
-                    final Request request = new Request.Builder().url(url).build();
-                    httpClient.newCall(request).enqueue(new Callback() {
-                        @Override
-                        public void onFailure(Call call, IOException e) {
-
-                        }
-
-                        @Override
-                        public void onResponse(Call call, Response response) throws IOException {
-                            String res = response.body().string();
-                            MapDirection md = new MapDirection();
-
-                            Document doc = md.getresponse(res);
-
-                            ArrayList<LatLng> directionPoint = md.getDirection(doc);
-                            PolylineOptions rectLine = new PolylineOptions().width(3).color(
-                                    Color.RED);
-
-                            for (int i = 0; i < directionPoint.size(); i++) {
-                                rectLine.add(directionPoint.get(i));
-                            }
-                            Polyline polylin = mMap.addPolyline(rectLine);
-                        }
-                    });
-
-                } catch (Exception e) {
-                    e.printStackTrace();
+                navBar = (ProgressBar) findViewById(R.id.progressBar2);
+                navBar.setVisibility(View.INVISIBLE);
+                view.setBackgroundColor(Color.BLUE);
+                Location currentloc = getLocation(listener);
+                if(canGetLocation) {
+                    Navigate nav = new Navigate(view);
+                    nav.execute(currentloc, loc);
                 }
+                else{
+
+                    snak.make(view, "Location Service disabled", Snackbar.LENGTH_SHORT).show();
+                }
+
 
 
             }
@@ -150,19 +126,22 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-
+        //initilizing bottomsheet
     private void initbottomsheet() {
         CoordinatorLayout cordinate = (CoordinatorLayout) findViewById(R.id.coordinate_layout);
         View bottomsheet = cordinate.findViewById(R.id.bottom_sheet);
         mBottomSheetBehavior1 = BottomSheetBehavior.from(bottomsheet);
         mBottomSheetBehavior1.setHideable(true);
+        //hide the bottomsheet once the bottomsheet initilized
         mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_HIDDEN);
         mBottomSheetBehavior1.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                //expand the bottomsheet once the data comming
                 if (newState == BottomSheetBehavior.STATE_EXPANDED) {
                     address = (TextView) findViewById(R.id.addresstxt);
                     address.setText(rulesContext.getAddress().getShortDisplayAddress());
+                    //instanciate the fragment tab inside bottomsheet
                     BottomSheetFragment fragment = new BottomSheetFragment();
                     getSupportFragmentManager().beginTransaction().replace(R.id.frame_container, fragment).commit();
 
@@ -178,7 +157,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
-
+    //initilize map
     private void initMap() {
 
         if (mMap == null) {
@@ -187,16 +166,18 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
             map.getMapAsync(this);
 
 
+
         }
 
     }
-
+    // request permission for android devices 6 and higher
     private void setpermission() {
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         } else {
+            //bind service
             ParkbobManager.getInstance().bindService(this);
 
 
@@ -208,6 +189,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == 1) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                //bind service
                 ParkbobManager.getInstance().bindService(this);
 
             }
@@ -220,25 +202,47 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+
+            //once map ready zoom and display default location
+            loc.setLatitude(48.21173395015507);
+            loc.setLongitude(16.377457603812218);
+            CameraUpdate center=
+                    CameraUpdateFactory.newLatLng(new LatLng(48.21173395015507,
+                            16.377457603812218));
+            CameraUpdate zoom=CameraUpdateFactory.zoomTo(16);
+
+            mMap.moveCamera(center);
+            mMap.animateCamera(zoom);
+
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(final LatLng latLng) {
 
 
                 Marker marker = null;
-                Location loc = new Location("location");
+                //set selected location
                 loc.setLatitude(latLng.latitude);
                 loc.setLongitude(latLng.longitude);
                 mMap.clear();
+                //add marker to selected location
                 mMap.addMarker(new MarkerOptions()
                         .title("")
                         .position(latLng)
                         .snippet(""));
+                //zoom to seleted location
+                CameraUpdate center=
+                        CameraUpdateFactory.newLatLng(latLng);
+                CameraUpdate zoom=CameraUpdateFactory.zoomTo(20);
 
-
+                mMap.moveCamera(center);
+                mMap.animateCamera(zoom);
+                // simulate parking events
                 ParkbobManager.getInstance().simulateParkingEvent(loc, ParkingEventType.IN);
+
+                //hide the bottomsheet in selecting new location
                 mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_HIDDEN);
 
+                //requesting Rules of seleted location based on LatLong
                 new GetRuleContext().execute(latLng);
 
 
@@ -268,10 +272,10 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-
+    //getRulecontext need to run on background thread
     public class GetRuleContext extends AsyncTask<LatLng, Void, RulesContext> {
 
-
+        //get data from server
         @Override
         protected RulesContext doInBackground(LatLng... latLngs) {
             rulesContext = ParkbobManager.getInstance().getRulesContext(latLngs[0], 100);
@@ -282,8 +286,95 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
         protected void onPostExecute(RulesContext rulesContext) {
             super.onPostExecute(rulesContext);
             if (rulesContext != null)
+                //change the state of bottomsheet once data comming from the server
                 mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_EXPANDED);
 
+        }
+    }
+
+    public class Navigate extends AsyncTask<Location, Void, PolylineOptions> {
+        View view;
+        ArrayList<LatLng> directionPoint = null;
+
+        public Navigate(View view){
+            this.view = view;
+        }
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            navBar.setVisibility(View.VISIBLE);
+            navBar.setIndeterminate(true);
+        }
+
+        @Override
+        protected PolylineOptions doInBackground(Location... loc) {
+
+            //drawing line from current location to selected location
+
+            try {
+                String url = "http://maps.googleapis.com/maps/api/directions/xml?"
+                        + "origin=" + loc[1].getLatitude() + "," + loc[1].getLongitude()
+                        + "&destination=" + loc[0].getLatitude() + "," + loc[0].getLongitude()
+                        + "&sensor=false&units=metric&mode=driving";
+
+                Log.d("url", url);
+
+                OkHttpClient httpClient = new OkHttpClient();
+
+                final Request request = new Request.Builder().url(url).build();
+                Response response = null;
+                try {
+                    //response from google map
+                    response = httpClient.newCall(request).execute();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+
+                InputStream res = response.body().byteStream();
+                MapDirection md = new MapDirection();
+
+                Document doc = md.getresponse(res);
+
+                directionPoint = md.getDirection(doc);
+                PolylineOptions rectLine = new PolylineOptions().width(5).color(
+                        Color.BLUE);
+
+                for (int i = 0; i < directionPoint.size(); i++) {
+                    rectLine.add(directionPoint.get(i));
+                }
+                return rectLine;
+
+            }catch (NullPointerException e){
+                e.printStackTrace();
+            }
+            return  null;
+        }
+
+        @Override
+        protected void onPostExecute(PolylineOptions rect) {
+            super.onPostExecute(rect);
+        if(rect != null) {
+
+            //move camrea in map in order to display navigation between current and selected location
+            Polyline polylin = mMap.addPolyline(rect);
+            LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
+            for (LatLng latLngPoint : directionPoint)
+                boundsBuilder.include(latLngPoint);
+
+            int routePadding = 100;
+            try {
+                LatLngBounds latLngBounds = boundsBuilder.build();
+
+                mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, routePadding));
+            }catch (IllegalStateException e){
+                e.printStackTrace();
+            }
+            navBar.setVisibility(View.INVISIBLE);
+            mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_HIDDEN);
+        } else{
+            snak.make(view, "Can not get your Location", Snackbar.LENGTH_SHORT).show();
+        }
         }
     }
 

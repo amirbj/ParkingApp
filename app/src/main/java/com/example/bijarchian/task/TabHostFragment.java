@@ -10,7 +10,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TabHost;
 
+import com.parkbob.models.GeoSpace;
 import com.parkbob.models.RulesContext;
+import com.parkbob.models.TrafficRule;
+
+import java.util.List;
 
 import static com.example.bijarchian.task.MainActivity.rulesContext;
 
@@ -58,19 +62,20 @@ public class TabHostFragment extends Fragment {
 
     private static Bundle getBundle(int pos){
         Bundle bundle = new Bundle();
-
+        TrafficRule currentRule = rulesContext.getGeoSpaceList().get(pos).getCurrentTrafficRule();
 
     try {
         //put current rule data in bundle
-        if (!rulesContext.getGeoSpaceList().get(pos).getCurrentTrafficRule().getType().name().equals("NO_PARKING")) {
+        if (!currentRule.getType().name().equals("NO_PARKING")) {
                 bundle.putString("type", "allow");
-                    bundle.putDouble("price", rulesContext.getGeoSpaceList().get(pos).getCurrentTrafficRule().getParkingCost().get(0).getPrice());
-                bundle.putString("title", rulesContext.getGeoSpaceList().get(pos).getCurrentTrafficRule().getRuleName().toString());
-                bundle.putString("fromtime", rulesContext.getGeoSpaceList().get(pos).getCurrentTrafficRule().getStartTime().toString());
-                bundle.putString("totime", rulesContext.getGeoSpaceList().get(pos).getCurrentTrafficRule().getEndTime().toString());
+                    bundle.putDouble("price", currentRule.getParkingCost().get(0).getPrice());
+                bundle.putInt("maxstay", currentRule.getMaxStay());
+                bundle.putString("title", currentRule.getRuleName().toString());
+                bundle.putString("fromtime", currentRule.getStartTime().toString());
+                bundle.putString("totime", currentRule.getEndTime().toString());
             } else {
                 bundle.putString("type", "notallow");
-                bundle.putString("title", rulesContext.getGeoSpaceList().get(pos).getCurrentTrafficRule().getRuleName().toString());
+                bundle.putString("title", currentRule.getRuleName().toString());
 
             }
 
@@ -81,21 +86,23 @@ public class TabHostFragment extends Fragment {
 
      try {
          //put future rule data in bundle
+         TrafficRule futureRule = rulesContext.getGeoSpaceList().get(pos).getFutureTrafficeRule();
 
 
-             if (!rulesContext.getGeoSpaceList().get(pos).getFutureTrafficeRule().getType().name().equals("NO_PARKING")) {
+             if (futureRule.getType().name().equals("NO_PARKING")) {
 
                  bundle.putString("ftype", "allow");
-                     bundle.putDouble("fprice", rulesContext.getGeoSpaceList().get(pos).getFutureTrafficeRule().getParkingCost().get(0).getPrice());
-                 bundle.putString("ftitle", rulesContext.getGeoSpaceList().get(pos).getFutureTrafficeRule().getRuleName());
+                     bundle.putDouble("fprice", futureRule.getParkingCost().get(0).getPrice());
+                 bundle.putString("ftitle", futureRule.getRuleName());
+                 bundle.putInt("fmaxstay", futureRule.getMaxStay());
 
-                 bundle.putString("ffromtime", rulesContext.getGeoSpaceList().get(pos).getFutureTrafficeRule().getStartTime().toString());
+                 bundle.putString("ffromtime", futureRule.getStartTime().toString());
 
-                 bundle.putString("ftotime", rulesContext.getGeoSpaceList().get(pos).getFutureTrafficeRule().getEndTime().toString());
+                 bundle.putString("ftotime", futureRule.getEndTime().toString());
 
              } else {
                  bundle.putString("ftype", "notallow");
-                 bundle.putString("ftitle", rulesContext.getGeoSpaceList().get(pos).getFutureTrafficeRule().getRuleName().toString());
+                 bundle.putString("ftitle", futureRule.getRuleName().toString());
 
              }
 

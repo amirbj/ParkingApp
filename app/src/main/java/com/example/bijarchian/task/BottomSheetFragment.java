@@ -34,6 +34,7 @@ public class BottomSheetFragment extends Fragment {
         return view;
     }
 
+    //initilizing tab inside bottomsheet
     private void initTab(Bundle bundle, View v) {
 
        mTablyout = (TabLayout) v.findViewById(R.id.tablayout);

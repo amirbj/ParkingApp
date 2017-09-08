@@ -59,7 +59,7 @@
         <TextView
             android:layout_width="0dp"
             android:layout_weight="0.2"
-            android:id="@+id/charge"
+            android:id="@+id/maxstay"
             android:layout_height="wrap_content"
             />
 

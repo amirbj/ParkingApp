@@ -16,7 +16,7 @@ import android.widget.TextView;
 
 public class NowTabFragment extends Fragment {
 
-    TextView pricetxt, chargetxt, fromtimetxt, totimetxt, titletxt, noparkingtxt;
+    TextView pricetxt, maxstaytxt, fromtimetxt, totimetxt, titletxt, noparkingtxt;
     Bundle bundle;
     LinearLayout mlayout, noparking_lay;
 
@@ -30,14 +30,14 @@ public class NowTabFragment extends Fragment {
         return view;
 
     }
-
+    //Initilizing content of Now Tab
     private void init(View v, Bundle data) {
         noparking_lay= (LinearLayout) v.findViewById(R.id.forbiden_linear_layout);
         mlayout = (LinearLayout) v.findViewById(R.id.now_linear_layout);
         noparkingtxt = (TextView) v.findViewById(R.id.forbidentxt);
         titletxt = (TextView) v.findViewById(R.id.title);
         pricetxt = (TextView) v.findViewById(R.id.price);
-        chargetxt = (TextView) v.findViewById(R.id.charge);
+        maxstaytxt = (TextView) v.findViewById(R.id.maxstay);
         fromtimetxt = (TextView) v.findViewById(R.id.fromtime);
         totimetxt = (TextView) v.findViewById(R.id.totime);
         ////////////////////////////////////////////
@@ -55,6 +55,7 @@ public class NowTabFragment extends Fragment {
                 mlayout.setVisibility(View.VISIBLE);
                 pricetxt.setText(data.getDouble("price")+ " EUR");
                 titletxt.setText(data.getString("title"));
+                maxstaytxt.setText("Max "+data.getInt("maxstay"));
                 fromtimetxt.setText(data.getString("fromtime"));
                 totimetxt.setText(data.getString("totime"));
             }
